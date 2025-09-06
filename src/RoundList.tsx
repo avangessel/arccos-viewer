@@ -44,20 +44,11 @@ const RoundCard: React.FC<{ r: RoundSummary }> = ({ r }) => {
         <span>Round ID: {r.roundId}</span>
         <span>{formatDate(r.startTime)}</span>
       </div>
-      <div style={{display:'flex', gap:'1rem', flexWrap:'wrap', fontSize:'.75rem'}}>
-        <span className="inline"><span className="badge">Score</span>{score} ({toPar})</span>
-        <span className="inline"><span className="badge">Shots</span>{r.noOfShots}</span>
+      <div style={{marginTop:'.4rem', display:'flex', alignItems:'center', gap:'.5rem'}}>
+        <span style={{background:'#1e2b36', padding:'.18rem .45rem', borderRadius:4, fontSize:'.65rem', letterSpacing:'.05em', fontWeight:700}}>SCORE</span>
+        <span style={{fontSize:'.95rem', fontWeight:600}}>{score} <span style={{fontSize:'.7rem', opacity:.85}}>({toPar})</span></span>
       </div>
-      {(r.driveHcp!=null || r.approachHcp!=null || r.chipHcp!=null || r.sandHcp!=null || r.puttHcp!=null) && (
-        <div style={{marginTop:'.25rem', fontSize:'.65rem', display:'flex', gap:'.65rem', flexWrap:'wrap', opacity:.9}}>
-          <span style={{fontWeight:600}}>HCP:</span>
-          {r.driveHcp!=null && <span>Drive {r.driveHcp.toFixed(1)}</span>}
-          {r.approachHcp!=null && <span>Approach {r.approachHcp.toFixed(1)}</span>}
-          {r.chipHcp!=null && <span>Chip {r.chipHcp.toFixed(1)}</span>}
-          {r.sandHcp!=null && <span>Sand {r.sandHcp.toFixed(1)}</span>}
-          {r.puttHcp!=null && <span>Putt {r.puttHcp.toFixed(1)}</span>}
-        </div>
-      )}
+  {/* Handicap summary removed per request */}
       {r.notes && <div className="muted" style={{marginTop:'.25rem'}}>{r.notes}</div>}
     </Link>
   );

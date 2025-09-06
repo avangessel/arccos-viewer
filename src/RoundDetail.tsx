@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { getRoundDetail, computeStats, colorForHole } from './dataLoader';
+import { getRoundDetail, getRoundSummary, computeStats, colorForHole } from './dataLoader';
 import { useMemo, useState, useContext } from 'react';
 import { UnitContext } from './App';
 import { MapView } from './MapView';
@@ -16,7 +16,9 @@ export const RoundDetail: React.FC = () => {
   const { id } = useParams();
   const { unit } = useContext(UnitContext);
   const roundId = Number(id);
-  const detail = getRoundDetail(roundId);
+  const detailRaw = getRoundDetail(roundId);
+  const summary = getRoundSummary(roundId);
+  const detail = detailRaw ? { ...summary, ...detailRaw } : null;
   const [focusHole, setFocusHole] = useState<number | null>(null);
   const [showAllHoles, setShowAllHoles] = useState(true);
   const [showShotMarkers, setShowShotMarkers] = useState(true);
@@ -52,18 +54,10 @@ export const RoundDetail: React.FC = () => {
       <div style={{marginTop:'.5rem', fontSize:'.8rem'}}>
         <strong>Score:</strong> {(detail as any).par ? `${score} (${toPar})` : `${detail.noOfShots} shots (${toPar})`} &nbsp; • &nbsp; <strong>Time:</strong> {formatTimeRange(detail.startTime, detail.endTime)}
       </div>
-      {(detail.driveHcp!=null || detail.approachHcp!=null || detail.chipHcp!=null || detail.sandHcp!=null || detail.puttHcp!=null) && (
-        <div style={{marginTop:'.35rem', fontSize:'.7rem', display:'flex', gap:'.65rem', flexWrap:'wrap', opacity:.9}}>
-          <span style={{fontWeight:600}}>HCP:</span>
-          {detail.driveHcp!=null && <span>Drive {detail.driveHcp.toFixed(1)}</span>}
-          {detail.approachHcp!=null && <span>Approach {detail.approachHcp.toFixed(1)}</span>}
-            {detail.chipHcp!=null && <span>Chip {detail.chipHcp.toFixed(1)}</span>}
-            {detail.sandHcp!=null && <span>Sand {detail.sandHcp.toFixed(1)}</span>}
-            {detail.puttHcp!=null && <span>Putt {detail.puttHcp.toFixed(1)}</span>}
-        </div>
-      )}
+      {/* Handicap block relocated below stats summary */}
       <div className="divider" />
-      {stats && <div className="stats-grid">
+      {stats && <>
+      <div className="stats-grid">
         <Stat label="Shots" value={detail.noOfShots} />
         { (detail as any).par && <Stat label="Score / Par" value={`${score}/${roundsPar}`} /> }
         <Stat label="To Par" value={toPar} />
@@ -73,7 +67,14 @@ export const RoundDetail: React.FC = () => {
         <Stat label="Up & Down" value={`${stats.upDowns}/${stats.upDownChances}`} />
   <Stat label={`Avg Approach (${unit === 'yards'? 'yd':'m'})`} value={stats.avgApproachDistance ? (unit === 'yards'? (stats.avgApproachDistance*1.09361).toFixed(1) : stats.avgApproachDistance.toFixed(1)) : '—'} />
         <Stat label="Scoring Avg" value={stats.scoringAverage.toFixed(2)} />
-      </div>}
+  {detail.driveHcp!=null && <Stat label="Drive HCP" value={detail.driveHcp.toFixed(1)} />}
+  {detail.approachHcp!=null && <Stat label="Approach HCP" value={detail.approachHcp.toFixed(1)} />}
+  {detail.chipHcp!=null && <Stat label="Chip HCP" value={detail.chipHcp.toFixed(1)} />}
+  {detail.sandHcp!=null && <Stat label="Sand HCP" value={detail.sandHcp.toFixed(1)} />}
+  {detail.puttHcp!=null && <Stat label="Putt HCP" value={detail.puttHcp.toFixed(1)} />}
+      </div>
+  {/* Handicap stats now integrated in stats grid */}
+      </>}
       <div className="toggle-row">
         <label><input type="checkbox" checked={showAllHoles} onChange={e=> setShowAllHoles(e.target.checked)} />Show all holes</label>
         <label><input type="checkbox" checked={showShotMarkers} onChange={e=> setShowShotMarkers(e.target.checked)} />Show shot markers</label>

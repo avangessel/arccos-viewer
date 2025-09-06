@@ -29,6 +29,10 @@ export function getRoundDetail(roundId: number): RoundDetail | null {
   return roundDetailMap.get(roundId) || null;
 }
 
+export function getRoundSummary(roundId: number) {
+  return summaries.find(s => s.roundId === roundId) || null;
+}
+
 export function computeStats(detail: RoundDetail) {
   let totalPutts = 0;
   let gir = 0;
