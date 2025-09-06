@@ -20,29 +20,55 @@ export const HoleBreakdown: React.FC<HoleBreakdownProps> = ({ holes, focusHole, 
   const upDownCount = holes.filter(h=> h.isUpDown==='T').length;
 
   return (
-    <div style={{marginTop:'1.5rem'}}>
-      <h3 style={{margin:'0 0 .75rem', fontSize:'1rem'}}>Scorecard Breakdown</h3>
+    <div style={{marginTop:'1.25rem'}}>
+      <h3 style={{margin:'0 0 .25rem', fontSize:'1.25rem'}}>Scorecard Breakdown</h3>
       <div style={{overflowX:'auto'}}>
-        <table style={{borderCollapse:'collapse', minWidth: holes.length * 80 + 220}}>
+    <table style={{borderCollapse:'separate', borderSpacing:0, minWidth: holes.length * 48 + 140}}>
           <thead>
             <tr>
               <th style={hCellLeft}>Stat</th>
-              {holes.map(h=> (
-                <th key={h.holeId} style={{...hCell, background: focusHole===h.holeId? '#28405a':'#1a232d', cursor:'pointer'}} onClick={()=> onFocusHole(h.holeId)}>
-                  H{h.holeId}
-                </th>
-              ))}
+              {holes.map(h=> {
+                const start = h.shots[0]?.shotTime;
+                const end = h.shots[h.shots.length-1]?.shotTime;
+                let dur = '';
+                if (start && end) {
+                  const ms = new Date(end).getTime() - new Date(start).getTime();
+                  dur = (ms/60000).toFixed(1)+'m';
+                }
+                const tip = `Hole ${h.holeId}\nStart: ${start? formatTime(start):'-'}\nEnd: ${end? formatTime(end):'-'}\nDur: ${dur || '-'}`;
+                return (
+                  <th
+                    key={h.holeId}
+                    title={tip}
+                    style={{...hCell, background: focusHole===h.holeId? '#28405a':'#1a232d', cursor:'pointer'}}
+                    onClick={()=> onFocusHole(h.holeId)}
+                  >
+                    {h.holeId}
+                  </th>
+                );
+              })}
               <th style={hCell}>Total</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map(r => (
-              <tr key={r.label}>
-                <td style={leftLabel}>{r.label}</td>
-                {r.values.map((v,i)=> <td key={i} style={{...cell, background: focusHole===holes[i].holeId? '#22313f':'#161d27'}}>{v}</td>)}
-                <td style={cell}>{aggregateForRow(r.label, { totalShots, totalPutts, girCount, fairwayCount, upDownCount, totalDistance, holes })}</td>
-              </tr>
-            ))}
+            {rows.map((r,rowIdx) => {
+              const evenRow = rowIdx % 2 === 0;
+              return (
+                <tr key={r.label}>
+                  <td style={{...leftLabel, background: evenRow? rowBgA : rowBgB}}>{r.label}</td>
+                  {r.values.map((v,colIdx)=> {
+                    const focused = focusHole===holes[colIdx].holeId;
+                    const colShade = colIdx % 2 === 0 ? (evenRow? colBgA : colBgB) : (evenRow? colBgAltA : colBgAltB);
+                    const bg = focused ? '#223c50' : colShade;
+                    return <td
+                      key={colIdx}
+                      style={{...cell, background:bg, borderRight:'1px solid #273544'}}
+                    >{v}</td>;
+                  })}
+                  <td style={{...cell, background: evenRow? totalBgA : totalBgB, fontWeight:600}}>{aggregateForRow(r.label, { totalShots, totalPutts, girCount, fairwayCount, upDownCount, totalDistance, holes })}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -63,10 +89,7 @@ function buildRows(holes: HoleDetail[], unit: 'meters' | 'yards'): ScorecardRow[
     const m = h.shots.reduce((a,s)=> a + (s.distance||0), 0);
     return Math.round(unit === 'yards'? m * 1.09361 : m);
   }) };
-  const start: ScorecardRow = { label: 'Start', values: holes.map(h=> formatTime(h.shots[0]?.shotTime)) };
-  const end: ScorecardRow = { label: 'End', values: holes.map(h=> formatTime(h.shots[h.shots.length-1]?.shotTime)) };
-  const dur: ScorecardRow = { label: 'Duration (m)', values: holes.map(h=> durationMinutes(h.shots[0]?.shotTime, h.shots[h.shots.length-1]?.shotTime)) };
-  return [shots, putts, gir, fairway, upDown, dist, start, end, dur];
+  return [shots, putts, gir, fairway, upDown, dist];
 }
 
 function aggregateForRow(label: string, ctx: { totalShots: number; totalPutts: number; girCount: number; fairwayCount: number; upDownCount: number; totalDistance: number; holes: HoleDetail[] }) {
@@ -79,14 +102,6 @@ function aggregateForRow(label: string, ctx: { totalShots: number; totalPutts: n
     case 'Up & Down': return `${ctx.upDownCount}/${holesLen}`;
   case 'Total Dist (m)': return Math.round(ctx.totalDistance);
   case 'Total Dist (yd)': return Math.round(ctx.totalDistance * 1.09361);
-    case 'Start': return formatTime(ctx.holes[0].shots[0]?.shotTime);
-    case 'End': return formatTime(ctx.holes[ctx.holes.length-1].shots[ctx.holes[ctx.holes.length-1].shots.length-1]?.shotTime);
-    case 'Duration (m)': {
-      const first = ctx.holes[0].shots[0]?.shotTime;
-      const lastHole = ctx.holes[ctx.holes.length-1];
-      const last = lastHole.shots[lastHole.shots.length-1]?.shotTime;
-      return durationMinutes(first, last);
-    }
   }
   return '';
 }
@@ -101,8 +116,17 @@ function durationMinutes(startIso?: string, endIso?: string) {
   return (ms/60000).toFixed(1);
 }
 
-// Styling helpers
-const hCell: React.CSSProperties = { padding: '.4rem .5rem', fontSize: '.65rem', background:'#1a232d', position:'sticky', top:0, textAlign:'center', borderBottom:'1px solid #253240', fontWeight:600, letterSpacing:'.05em' };
-const hCellLeft: React.CSSProperties = { ...hCell, textAlign:'left', minWidth:140 };
-const leftLabel: React.CSSProperties = { padding: '.45rem .55rem', fontSize: '.65rem', textAlign:'left', background:'#18202b', borderBottom:'1px solid #233041', fontWeight:600 };
-const cell: React.CSSProperties = { padding: '.45rem .55rem', fontSize: '.65rem', textAlign:'center', background:'#161d27', borderBottom:'1px solid #233041', minWidth:60 };
+// Styling helpers (condensed)
+const hCell: React.CSSProperties = { padding: '.32rem .34rem', fontSize: '.65rem', background:'#16202a', position:'sticky', top:0, textAlign:'center', borderBottom:'1px solid #2d3a49', fontWeight:700, letterSpacing:'.04em', whiteSpace:'nowrap' };
+const hCellLeft: React.CSSProperties = { ...hCell, textAlign:'left', minWidth:90 };
+const leftLabel: React.CSSProperties = { padding: '.28rem .32rem', fontSize: '.64rem', textAlign:'left', borderBottom:'1px solid #273544', fontWeight:600, whiteSpace:'nowrap' };
+const cell: React.CSSProperties = { padding: '.26rem .28rem', fontSize: '.64rem', textAlign:'center', borderBottom:'1px solid #273544', minWidth:42 };
+// Color palette for zebra and column shading
+const rowBgA = '#14202a';
+const rowBgB = '#101a23';
+const colBgA = '#1a2834';
+const colBgB = '#16222c';
+const colBgAltA = '#1e303d';
+const colBgAltB = '#1a2731';
+const totalBgA = '#203445';
+const totalBgB = '#1c303f';
