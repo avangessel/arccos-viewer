@@ -30,6 +30,12 @@ export const App: React.FC = () => {
     setOpen(false);
   }
   const ctx: UnitContextValue = { unit, toggle, toDisplay: (m)=> formatDistance(unit, m) };
+
+  function prefetchOverall() {
+    if ((prefetchOverall as any).done) return;
+    (prefetchOverall as any).done = true;
+    import('./OverallStats');
+  }
   return (
     <UnitContext.Provider value={ctx}>
       <div className="layout">
@@ -37,7 +43,7 @@ export const App: React.FC = () => {
           <h1>Arccos Viewer</h1>
           <nav>
             <NavLink to="/" end className={({isActive})=> isActive? 'active': ''}>Rounds</NavLink>
-            <NavLink to="/overall" className={({isActive})=> isActive? 'active': ''}>Overall</NavLink>
+            <NavLink to="/overall" className={({isActive})=> isActive? 'active': ''} onMouseEnter={prefetchOverall} onFocus={prefetchOverall}>Overall</NavLink>
           </nav>
           <div className="header-actions">
             <button onClick={()=> setOpen(o=>!o)} className="settings-btn">{unit === 'yards'? 'Yards (yd)':'Meters (m)'} ▾</button>
