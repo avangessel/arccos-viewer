@@ -42,12 +42,14 @@ export function computeStats(detail: RoundDetail) {
   let upDownChances = 0;
   let approachDistances: number[] = [];
 
-  for (const h of detail.holes) {
-    totalPutts += h.putts ?? 0;
+  for (const rawHole of detail.holes || []) {
+    if (!rawHole) continue;
+    const h: any = rawHole; // be tolerant of partial data
+    totalPutts += (typeof h.putts === 'number' ? h.putts : 0);
     if (h.isGir === 'T') gir++;
-    // Fairway only meaningful on non-par3 holes (approx: holes with first shot clubType driver/wood/long iron OR noOfShots >=4)
-    const firstShot = h.shots[0];
-    const likelyPar3 = (firstShot?.distance || 0) < 200 && h.noOfShots <= 4 && h.shots.length < 5; // rough heuristic
+    const shotsArr: any[] = Array.isArray(h.shots) ? h.shots : [];
+    const firstShot = shotsArr[0];
+    const likelyPar3 = (firstShot?.distance || 0) < 200 && (h.noOfShots || shotsArr.length) <= 4 && shotsArr.length < 5;
     if (!likelyPar3) {
       fairwayChances++;
       if (h.isFairWay === 'T') fairways++;
@@ -55,7 +57,7 @@ export function computeStats(detail: RoundDetail) {
     if (h.isUpDownChance === 'T') upDownChances++;
     if (h.isUpDown === 'T') upDowns++;
     if (h.approachShotId) {
-      const app = h.shots.find(s => s.shotId === h.approachShotId);
+      const app = shotsArr.find(s => s && s.shotId === h.approachShotId);
       if (app?.distance) approachDistances.push(app.distance);
     }
   }

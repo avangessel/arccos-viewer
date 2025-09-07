@@ -1,6 +1,7 @@
 import { Routes, Route, NavLink } from 'react-router-dom';
 import { RoundList } from './RoundList';
 import { RoundDetail } from './RoundDetail';
+import { OverallStats } from './OverallStats';
 import React, { useEffect, useState } from 'react';
 
 export type DistanceUnit = 'yards' | 'meters';
@@ -34,6 +35,7 @@ export const App: React.FC = () => {
           <h1>Arccos Viewer</h1>
           <nav>
             <NavLink to="/" end className={({isActive})=> isActive? 'active': ''}>Rounds</NavLink>
+            <NavLink to="/overall" className={({isActive})=> isActive? 'active': ''}>Overall</NavLink>
           </nav>
           <div style={{marginLeft:'auto', position:'relative'}}>
             <button onClick={()=> setOpen(o=>!o)} style={settingsBtn}>{unit === 'yards'? 'Yards (yd)':'Meters (m)'} ▾</button>
@@ -48,6 +50,7 @@ export const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<RoundList />} />
             <Route path="/round/:id" element={<RoundDetail />} />
+            <Route path="/overall" element={<OverallStats />} />
             <Route path="*" element={<div>Not found</div>} />
           </Routes>
         </main>
