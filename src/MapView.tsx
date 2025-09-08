@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useContext } from 'react';
 import L, { Map as LeafletMap } from 'leaflet';
 import type { HoleDetail } from './types';
 import { holePolylineCoordinates, colorForHole } from './dataLoader';
+import { UnitContext } from './App';
 
 interface MapViewProps {
   holes: HoleDetail[];
@@ -14,6 +15,7 @@ interface MapViewProps {
 export const MapView: React.FC<MapViewProps> = ({ holes, focusHole, onFocusHole, showAllHoles, showShotMarkers }) => {
   const mapRef = useRef<LeafletMap | null>(null);
   const layerGroupRef = useRef<L.LayerGroup | null>(null);
+  const { unit } = useContext(UnitContext);
 
   useEffect(() => {
     if (!mapRef.current) {
@@ -47,22 +49,26 @@ export const MapView: React.FC<MapViewProps> = ({ holes, focusHole, onFocusHole,
       if (showShotMarkers) {
         hole.shots.forEach((shot, i) => {
           const isFocus = hole.holeId === focusHole;
+          const raw = shot.distance;
+          const converted = raw == null ? null : (unit === 'yards' ? raw * 1.09361 : raw);
+          const distLabel = raw == null ? '—' : `${converted!.toFixed(1)} ${unit === 'yards' ? 'yd' : 'm'}`;
           const marker = L.marker([shot.endLat, shot.endLong], {
             icon: L.divIcon({
               className: 'shot-marker' + (isFocus ? ' hole-focus' : ''),
               html: String(i + 1)
             })
           });
-          marker.bindPopup(`<div class=shot-popup><strong>Hole ${hole.holeId}</strong><br/>Shot ${i + 1}<br/>Dist: ${shot.distance?.toFixed(1) ?? '—'} m</div>`);
+          marker.bindPopup(`<div class=shot-popup><strong>Hole ${hole.holeId}</strong><br/>Shot ${i + 1}<br/>Dist: ${distLabel}</div>`);
           marker.addTo(layerGroup);
         });
       }
     });
 
     if (bounds.length) {
-      map.fitBounds(bounds as L.LatLngExpression[], { padding: [20, 20] });
+      const tupleBounds = bounds as [number, number][];
+      map.fitBounds(tupleBounds, { padding: [20, 20] });
     }
-  }, [holes, focusHole, showAllHoles, showShotMarkers, onFocusHole]);
+  }, [holes, focusHole, showAllHoles, showShotMarkers, onFocusHole, unit]);
 
   return <div id="round-map" className="map-container" />;
 };

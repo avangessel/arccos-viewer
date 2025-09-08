@@ -14,6 +14,7 @@ Simple Vite + React + TypeScript web app to explore local Arccos-exported round 
 
 ## Data Assumptions & Notes
 
+- Data exported using [skhavari/arccos-export](https://github.com/skhavari/arccos-export).
 - `data/rounds.json` supplies round summaries (contains par & over/under used for score if needed).
 - Each `data/round_<id>.json` contains hole + shot detail. Hole par values are not present; heuristics approximate fairway opportunities (skips likely par 3s when computing fairways-hit percentage).
 - Approach shot distance uses hole `approachShotId` when available.
@@ -35,14 +36,6 @@ Navigate to the printed local URL (default http://localhost:5173). The existing 
 npm run build
 npm run preview
 ```
-
-## Customization Ideas
-
-- Add hole par data (if obtainable) for per-hole scoring.
-- Export filtered dataset / CSV.
-- Add club mapping & distance dispersion charts.
-- Offline tile cache or satellite layer toggle.
-- Performance: lazy-load round detail JSON only when route visited (convert eager glob to dynamic import).
 
 ## License
 

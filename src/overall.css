@@ -1,0 +1,19 @@
+/* Overall stats and charts styles */
+.overall-title { margin-top:0; }
+.overall-stats-grid { margin-top:.75rem; }
+.overall-charts { margin-top:1.75rem; }
+.overall-charts h3 { margin:0 0 .75rem; font-size:1rem; }
+.chart-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+.chart-container { height:240px; background:#161d27; border:1px solid #243040; border-radius:8px; padding:.25rem .5rem; }
+.filters-row { display:flex; flex-wrap:wrap; gap:.5rem; margin:.75rem 0 0; align-items:flex-end; }
+.filters-row label { font-size:.6rem; text-transform:uppercase; letter-spacing:.08em; opacity:.75; display:block; margin-bottom:.2rem; }
+.filters-row select, .filters-row input { background:#1d2733; border:1px solid #314252; color:#fff; padding:.35rem .45rem; font-size:.65rem; border-radius:4px; }
+.inline-note { font-size:.55rem; opacity:.65; }
+.percent-line { stroke:#ff7f50; stroke-width:2; } /* generic percentage line */
+.gridline { stroke:#2a3642; }
+
+/* Unified chart tooltip styling (replaces inline styles) */
+.chart-tooltip { background:#1a222c; border:1px solid #263240; font-size:12px; padding:.35rem .5rem; border-radius:4px; line-height:1.2; }
+.reset-btn { background:#2a3745; border:1px solid #3a4a59; color:#fff; padding:.4rem .6rem; font-size:.55rem; border-radius:4px; cursor:pointer; }
+.reset-btn:hover { background:#344554; }
+.charts-loading { font-size:.7rem; opacity:.7; padding:.5rem 0; }
